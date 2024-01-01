@@ -1,0 +1,4 @@
+.env
+cfg.yml
+.idea/
+__pycache__/
