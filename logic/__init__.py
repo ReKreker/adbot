@@ -1,3 +1,4 @@
+import copy
 import os
 import sys
 from difflib import Differ
@@ -10,7 +11,7 @@ import logic.forcad
 
 strats = {
     "ForcAD_config": forcad.Config,
-    # "ForcAD_tokens":
+    "ForcAD_tokens": forcad.Tokens,
 }
 
 
@@ -29,18 +30,17 @@ def enrich_bot(cli_args: Namespace) -> None:
     else:
         text = sys.stdin.read()
 
+    if not os.path.exists(config.ADBOT_CFG):
+        cfg = {"game": {}, "tasks": {}, "teams": {}}
+    else:
+        cfg = yaml.safe_load(open(config.ADBOT_CFG, "r"))
+    original = copy.deepcopy(cfg)
+
     strategy = strats.get(cli_args.type)
     assert strategy, "Not a valid config's type"
     print("Start parsing...")
     elem = strategy()
     elem.parse(text)
-
-    if not os.path.exists(config.ADBOT_CFG):
-        cfg = {}
-    else:
-        cfg = yaml.safe_load(open(config.ADBOT_CFG, "r"))
-    original = cfg.copy()
-
     elem.update_rule(cfg)
     yaml.safe_dump(cfg, open(config.ADBOT_CFG, "w+"))
 
